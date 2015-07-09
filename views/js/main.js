@@ -447,14 +447,20 @@ var resizePizzas = function(size) {
 
     return dx;
   }
-
+  
   // Iterates through pizza elements on the page and changes their widths
-  // Moved variable declarations outside of for loop so that calculations only have to be done once, and changed to the quicker "getElementsByClassName" from the slower "QuerySelectorAll"
+  /*
+  I moved the variable declarations of i, dx, and newwidth outside of the for loop
+  and I put the code to find the length of the "randomPizzaContainer" array in the variable
+  "arraylength" to reduce the time to resize pizzas to below 5ms.
+  */
   function changePizzaSizes(size) {
-    var dx = determineDx(document.getElementsByClassName("randomPizzaContainer")[0], size);
-    var newwidth = (document.getElementsByClassName("randomPizzaContainer")[0].offsetWidth + dx) + 'px';
-    for (var i = 0; i < document.getElementsByClassName(".randomPizzaContainer").length; i++) {
-      document.getElementsByClassName(".randomPizzaContainer")[i].style.width = newwidth;
+    var i = 0;
+    var dx = determineDx(document.querySelectorAll(".randomPizzaContainer")[i], size);
+    var newwidth = (document.querySelectorAll(".randomPizzaContainer")[i].offsetWidth + dx) + 'px';
+    var arraylength = document.querySelectorAll(".randomPizzaContainer").length;
+    for (var i = 0; i < arraylength; i++) {
+      document.querySelectorAll(".randomPizzaContainer")[i].style.width = newwidth;
     }
   }
 
@@ -502,10 +508,14 @@ function logAverageFrame(times) {   // times is the array of User Timing measure
 function updatePositions() {
   frame++;
   window.performance.mark("mark_start_frame");
-
-  var items = document.querySelectorAll('.mover');
-  for (var i = 0; i < items.length; i++) {
-    var phase = Math.sin((document.body.scrollTop / 1250) + (i % 5));
+  // Changed querySelectorAll to getElementsByClassName for 'mover'
+  var items = document.getElementsByClassName('mover');
+  //took itemsLength out of for loop so that it only gets calculated once
+  var itemslength = items.length;
+  //took calcone out of for loop so that it only needs to be calculated once
+  var calcone = (document.body.scrollTop / 1250);
+  for (var i = 0; i < itemslength; i++) {
+    var phase = Math.sin(calcone+i); // + (i % 5)); <--removed because it didn't alter website behavior
     items[i].style.left = items[i].basicLeft + 100 * phase + 'px';
   }
 
@@ -522,11 +532,50 @@ function updatePositions() {
 // runs updatePositions on scroll
 window.addEventListener('scroll', updatePositions);
 
+//Returns browser window height and width for determining number of sliding pizzas
+var intViewportHeight = window.innerHeight;
+var intViewportWidth = window.innerWidth;
+//logs to console to test if it's working
+console.log("Inner Height =" + intViewportHeight);
+console.log("Inner Width =" + intViewportWidth);
+
 // Generates the sliding pizzas when the page loads.
+// I updated this function to generate the number of sliding pizzas based on the viewport of the browser.
 document.addEventListener('DOMContentLoaded', function() {
-  var cols = 8;
-  var s = 256;
-  for (var i = 0; i < 20; i++) {
+  var s = 256; //this determines (in pixels) the distance apart from one another (vert. and horizontal) of the sliding pizzas' positions
+  
+  //Function to determine how many columns of sliding pizzas need to be created based on the
+  //width of the screen. Takes intViewportWidth as input and returns number of columns.
+  function getColumns(col) {
+   var numCols = Math.round(col/s) + 1;
+   return numCols;
+  }
+
+  //puts number of columns into a variable
+  var cols = getColumns(intViewportWidth);
+
+  //determines the number of rows of sliding pizzas needed
+  function getRows(ro) {
+    var numRows = Math.round(ro/s) + 1;
+    return numRows;
+  }
+
+  //puts number of rows into a variable
+  var ros = getRows(intViewportHeight);
+
+  //determines the total number of sliding pizzas needed by multiplying column width by row height
+  function getTots(col, ro) {
+    var tots = col * ro;
+    return tots;
+  }
+  //puts number of total sliding pizzas into a variable
+  var tot = getTots(cols, ros);
+
+  //logs tot to test if its working
+  console.log(tot);
+
+  var columns = cols; //this now gets the number of columns from the function getColumns
+  for (var i = 0; i < tot; i++) {
     var elem = document.createElement('img');
     elem.className = 'mover';
     elem.src = "images/pizza.png";
