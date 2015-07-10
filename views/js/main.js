@@ -454,15 +454,18 @@ var resizePizzas = function(size) {
   /*
   I moved the variable declarations of i, dx, and newwidth outside of the for loop
   and I put the code to find the length of the "randomPizzaContainer" array in the variable
-  "arraylength" to reduce the time to resize pizzas to below 5ms.
+  "arraylength" to reduce the time to resize pizzas to below 5ms. I also replaced QuerySelectorAll
+  with getElementsByClassName.
   */
   function changePizzaSizes(size) {
-    var i = 0;
-    var dx = determineDx(document.querySelectorAll(".randomPizzaContainer")[i], size);
-    var newwidth = (document.querySelectorAll(".randomPizzaContainer")[i].offsetWidth + dx) + 'px';
-    var arraylength = document.querySelectorAll(".randomPizzaContainer").length;
-    for (var i = 0; i < arraylength; i++) {
-      document.querySelectorAll(".randomPizzaContainer")[i].style.width = newwidth;
+    var i; //declared variable outside of loop
+    var dx = determineDx(document.getElementsByClassName("randomPizzaContainer")[0], size);
+    var newwidth = (document.getElementsByClassName("randomPizzaContainer")[0].offsetWidth + dx) + 'px';
+    var arraylength = document.getElementsByClassName("randomPizzaContainer").length;
+    //put new variable 'container' so the DOM isn't accessed each time in the for loop
+    var container = document.getElementsByClassName('randomPizzaContainer');
+    for (i = 0; i < arraylength; i++) {
+      container[i].style.width = newwidth;
     }
   }
 
@@ -478,9 +481,9 @@ var resizePizzas = function(size) {
 window.performance.mark("mark_start_generating"); // collect timing data
 
 // This for-loop actually creates and appends all of the pizzas when the page loads
-for (var i = 2; i < 100; i++) {
-  var pizzasDiv = document.getElementById("randomPizzas");
-  pizzasDiv.appendChild(pizzaElementGenerator(i));
+var pizzasDiv = document.getElementById("randomPizzas"); //moved variable declaration out of for loop
+for (i = 2; i < 100; i++) { //declared var i earlier so removed declaration in for loop parameters
+   pizzasDiv.appendChild(pizzaElementGenerator(i));
 }
 
 // User Timing API again. These measurements tell you how long it took to generate the initial pizzas
@@ -497,7 +500,7 @@ var frame = 0;
 function logAverageFrame(times) {   // times is the array of User Timing measurements from updatePositions()
   var numberOfEntries = times.length;
   var sum = 0;
-  for (var i = numberOfEntries - 1; i > numberOfEntries - 11; i--) {
+  for (i = numberOfEntries - 1; i > numberOfEntries - 11; i--) { //removed var declaration since i is already declared
     sum = sum + times[i].duration;
   }
   console.log("Average time to generate last 10 frames: " + sum / 10 + "ms");
@@ -516,8 +519,9 @@ function updatePositions() {
   var itemslength = items.length;
   //took calcone out of for loop so that it only needs to be calculated once
   var calcone = (document.body.scrollTop / 1250);
-  for (var i = 0; i < itemslength; i++) {
-    var phase = Math.sin(calcone+i); // + (i % 5)); <--removed because it didn't alter website behavior
+  var phase; //moved declaration out of loop
+  for (i = 0; i < itemslength; i++) { //removed i var declaration
+    phase = Math.sin(calcone+i); // + (i % 5)); <--removed because it didn't alter website behavior
     items[i].style.left = items[i].basicLeft + 100 * phase + 'px';
   }
 
@@ -577,15 +581,16 @@ document.addEventListener('DOMContentLoaded', function() {
   console.log(tot);
 
   var columns = cols; //this now gets the number of columns from the function getColumns
+  var elem;
   for (var i = 0; i < tot; i++) {
-    var elem = document.createElement('img');
+    elem = document.createElement('img');
     elem.className = 'mover';
     elem.src = "images/pizza.png";
     elem.style.height = "100px";
     elem.style.width = "73.333px";
     elem.basicLeft = (i % cols) * s;
     elem.style.top = (Math.floor(i / cols) * s) + 'px';
-    document.querySelector("#movingPizzas1").appendChild(elem);
+    document.getElementById("movingPizzas1").appendChild(elem); //changed querySelector to getElementById
   }
   updatePositions();
 });
